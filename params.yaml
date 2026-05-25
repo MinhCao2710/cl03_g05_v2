@@ -1,0 +1,81 @@
+data:
+  target_column: target_encoded
+
+paths:
+  source_data: data/cleaned_dataset.csv
+  train_data: train/train.csv
+  test_data: test/test.csv
+  new_data: data/new_data.csv
+  combined_train_data: artifacts/data/train_with_new_data.csv
+  model_path: models/model.keras
+  legacy_model_path: models/model.h5
+  scaler_path: artifacts/preprocessing/scaler.joblib
+  feature_columns_path: artifacts/preprocessing/feature_columns.json
+  feature_info_path: artifacts/preprocessing/feature_info.json
+  training_history_path: artifacts/metrics/training_history.json
+  train_metrics_path: artifacts/metrics/train_metrics.json
+  test_metrics_path: artifacts/metrics/test_metrics.json
+  evaluation_metrics_path: artifacts/metrics/evaluation_metrics.json
+  classification_report_path: artifacts/metrics/classification_report.json
+  monitoring_metrics_path: artifacts/metrics/monitoring_metrics.json
+  training_metadata_path: artifacts/metadata/training_metadata.json
+  evaluation_metadata_path: artifacts/metadata/evaluation_metadata.json
+  new_data_metadata_path: artifacts/metadata/new_data_metadata.json
+  x_test_path: artifacts/data/X_test.npy
+  y_test_path: artifacts/data/y_test.npy
+  x_new_path: artifacts/data/X_new.npy
+  x_new_2d_path: artifacts/data/X_new_2d.npy
+  y_new_path: artifacts/data/y_new.npy
+  aligned_new_data_path: artifacts/data/new_data_aligned.csv
+  test_predictions_path: artifacts/data/test_predictions.csv
+  submission_path: artifacts/data/submission.csv
+  confusion_matrix_plot_path: reports/confusion_matrix.png
+  prediction_distribution_plot_path: reports/prediction_distribution.png
+  monitoring_summary_path: artifacts/metadata/monitoring_summary.json
+  retraining_flags_path: artifacts/metadata/retraining_flags.json
+
+split:
+  test_size: 0.2
+  new_data_size: 0.1
+  random_state: 42
+  stratify: true
+
+preprocessing:
+  imputer_strategy: median
+  standard_scale_columns:
+    - BMI
+  minmax_scale_columns:
+    - Eating_risk
+    - Activity_risk
+    - Lifestyle_risk
+
+model:
+  name: mlp_classifier
+  hidden_layers:
+    - 64
+    - 32
+    - 16
+  activation: relu
+  dropout: 0.1
+  l2_reg: 0.0001
+  learning_rate: 0.001
+  loss: sparse_categorical_crossentropy
+
+training:
+  random_state: 42
+  epochs: 120
+  batch_size: 32
+  validation_split: 0.2
+  verbose: 1
+  early_stopping:
+    enabled: true
+    monitor: val_loss
+    patience: 20
+    restore_best_weights: true
+
+monitoring:
+  min_labelled_new_rows: 20
+  accuracy_drop_threshold: 0.05
+  precision_drop_threshold: 0.05
+  recall_drop_threshold: 0.05
+  f1_drop_threshold: 0.05

@@ -1,44 +1,146 @@
-name: Train ML Model
+name: DVC MLOps Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "data/**"
+      - "train/**"
+      - "test/**"
+      - "src/**"
+      - "params.yaml"
+      - "dvc.yaml"
+      - "requirements.txt"
+      - ".github/workflows/train.yaml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "data/**"
+      - "train/**"
+      - "test/**"
+      - "src/**"
+      - "params.yaml"
+      - "dvc.yaml"
+      - "requirements.txt"
+      - ".github/workflows/train.yaml"
   workflow_dispatch:
 
+concurrency:
+  group: dvc-mlops-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  train:
+  dvc-pipeline:
     runs-on: ubuntu-latest
+    env:
+      DVC_REMOTE_URL: ${{ secrets.DVC_REMOTE_URL }}
+      DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+      DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Train model
-        run: python model.py
+      - name: Ensure DVC project exists
+        run: |
+          if [ ! -d ".dvc" ]; then
+            echo "::warning::DVC has not been initialized in this repo yet. Initializing in CI so the pipeline can run."
+            dvc init --quiet
+          fi
 
-      - name: Upload results
+      - name: Configure DVC remote
+        run: |
+          if [ -z "$DVC_REMOTE_URL" ]; then
+            echo "::warning::DVC_REMOTE_URL secret is not set. Skipping remote configuration."
+            exit 0
+          fi
+
+          dvc remote add --force -d origin "$DVC_REMOTE_URL"
+
+          if [ -n "$DAGSHUB_USERNAME" ] && [ -n "$DAGSHUB_TOKEN" ]; then
+            dvc remote modify origin --local auth basic
+            dvc remote modify origin --local user "$DAGSHUB_USERNAME"
+            dvc remote modify origin --local password "$DAGSHUB_TOKEN"
+          else
+            echo "::warning::DAGSHUB_USERNAME or DAGSHUB_TOKEN is not set. DVC pull/push may fail for private remotes."
+          fi
+
+      - name: Pull existing DVC artifacts
+        run: |
+          if [ -z "$DVC_REMOTE_URL" ]; then
+            echo "::warning::No DVC remote configured, so dvc pull is skipped."
+            exit 0
+          fi
+
+          dvc pull || echo "::warning::dvc pull failed or no remote artifacts exist yet. Continuing with a fresh run."
+
+      - name: Reproduce DVC pipeline
+        run: dvc repro
+
+      - name: Show DVC metrics
+        run: dvc metrics show || true
+
+      - name: Add metrics to workflow summary
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          metric_files = [
+              Path("artifacts/metrics/train_metrics.json"),
+              Path("artifacts/metrics/test_metrics.json"),
+              Path("artifacts/metrics/evaluation_metrics.json"),
+              Path("artifacts/metadata/retraining_flags.json"),
+          ]
+
+          lines = ["## DVC MLOps Pipeline Summary", ""]
+          for path in metric_files:
+              if not path.exists():
+                  continue
+              lines.append(f"### {path}")
+              lines.append("")
+              lines.append("```json")
+              lines.append(json.dumps(json.loads(path.read_text()), indent=2))
+              lines.append("```")
+              lines.append("")
+
+          summary_path.write_text("\\n".join(lines))
+          PY
+
+      - name: Push DVC artifacts
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "$DVC_REMOTE_URL" ]; then
+            echo "::warning::No DVC remote configured, so dvc push is skipped."
+            exit 0
+          fi
+
+          dvc push
+
+      - name: Upload pipeline outputs
         uses: actions/upload-artifact@v4
         with:
-          name: model-results
+          name: mlops-pipeline-outputs
+          if-no-files-found: ignore
           path: |
-            model_results.png
-            metrics.txt
-            training_history.png
+            models/model.keras
+            models/model.h5
+            reports/*.png
+            artifacts/data/test_predictions.csv
+            artifacts/data/submission.csv
+            artifacts/metrics/*.json
+            artifacts/metadata/*.json

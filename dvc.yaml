@@ -1,0 +1,83 @@
+stages:
+  train:
+    cmd: python src/model.py
+    deps:
+      - src/model.py
+      - train/train.csv
+      - test/test.csv
+    params:
+      - data
+      - preprocessing
+      - model
+      - training
+      - paths
+    outs:
+      - models/model.keras
+      - models/model.h5
+      - artifacts/preprocessing/scaler.joblib
+      - artifacts/preprocessing/feature_columns.json
+      - artifacts/preprocessing/feature_info.json
+      - artifacts/data/X_test.npy
+      - artifacts/data/y_test.npy
+      - artifacts/metadata/training_metadata.json
+    metrics:
+      - artifacts/metrics/train_metrics.json
+      - artifacts/metrics/test_metrics.json
+    plots:
+      - artifacts/metrics/training_history.json
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - models/model.keras
+      - artifacts/preprocessing/feature_info.json
+      - artifacts/data/X_test.npy
+      - artifacts/data/y_test.npy
+    params:
+      - paths
+    outs:
+      - artifacts/data/test_predictions.csv
+      - artifacts/data/submission.csv
+      - reports/confusion_matrix.png
+      - reports/prediction_distribution.png
+      - artifacts/metadata/evaluation_metadata.json
+    metrics:
+      - artifacts/metrics/evaluation_metrics.json
+      - artifacts/metrics/classification_report.json
+
+  preprocess_new_data:
+    cmd: python src/preprocess_new_data.py
+    deps:
+      - src/preprocess_new_data.py
+      - data/new_data.csv
+      - train/train.csv
+      - artifacts/preprocessing/scaler.joblib
+      - artifacts/preprocessing/feature_info.json
+    params:
+      - paths
+    outs:
+      - artifacts/data/X_new.npy
+      - artifacts/data/X_new_2d.npy
+      - artifacts/data/y_new.npy
+      - artifacts/data/new_data_aligned.csv
+      - artifacts/data/train_with_new_data.csv
+      - artifacts/metadata/new_data_metadata.json
+
+  monitor:
+    cmd: python src/monitor.py
+    deps:
+      - src/monitor.py
+      - models/model.keras
+      - artifacts/data/X_test.npy
+      - artifacts/data/y_test.npy
+      - artifacts/data/X_new.npy
+      - artifacts/data/y_new.npy
+    params:
+      - paths
+      - monitoring
+    outs:
+      - artifacts/metadata/monitoring_summary.json
+      - artifacts/metadata/retraining_flags.json
+    metrics:
+      - artifacts/metrics/monitoring_metrics.json

@@ -1,7 +1,11 @@
 tensorflow
-numpy
-matplotlib
-pandas
-seaborn
 keras
-category_encoders 
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+joblib
+PyYAML
+dvc
+h5py
