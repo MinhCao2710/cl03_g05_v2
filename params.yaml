@@ -79,3 +79,9 @@ monitoring:
   precision_drop_threshold: 0.05
   recall_drop_threshold: 0.05
   f1_drop_threshold: 0.05
+# drift thresholds
+  mean_shift_threshold: 0.20       # relative change in feature mean
+  std_shift_threshold: 0.30        # relative change in feature std
+  ks_pvalue_threshold: 0.05        # KS-test significance level
+  class_dist_threshold: 0.10       # per-class fraction change
+  missing_rate_threshold: 0.05     # missing-rate change per feature
