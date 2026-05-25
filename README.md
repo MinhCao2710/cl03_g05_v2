@@ -77,12 +77,6 @@ reports/confusion_matrix.png
 reports/prediction_distribution.png
 ```
 
-## What Stays In The Notebook
-
-Keep exploratory work in `traditional_model.ipynb`: EDA, quick charts, target/class checks, feature experiments, and comparison notes for the assignment report.
-
-Move repeatable work into Python scripts: data loading, preprocessing, classifier training, evaluation, artifact saving, new-data preparation, and monitoring decisions. This makes the workflow easier to rerun with DVC and easier to maintain.
-
 ## Retraining And Monitoring
 
 `src/preprocess_new_data.py` aligns `data/new_data.csv` to the training feature columns, applies the saved scaler, saves NumPy arrays, and creates `artifacts/data/train_with_new_data.csv` when the new data includes labels.
