@@ -1,0 +1,85 @@
+stages:
+  preprocess_new_data:
+    cmd: python src/preprocess_new_data.py
+    deps:
+      - src/preprocess_new_data.py
+      - data/new_data.csv
+      - train/train.csv
+      - artifacts/preprocessing/scaler.pkl
+      - artifacts/preprocessing/encoder.pkl
+      - artifacts/preprocessing/feature_columns.json
+    params:
+      - params.yaml:
+          - preprocessing.test_size
+          - preprocessing.random_state
+    outs:
+      - artifacts/data/X_train.npy
+      - artifacts/data/y_train.npy
+      - artifacts/data/X_test.npy
+      - artifacts/data/y_test.npy
+      - artifacts/data/X_new.npy
+      - artifacts/data/train_with_new_data.csv
+
+  monitor:
+    cmd: python src/monitor.py
+    deps:
+      - src/monitor.py
+      - artifacts/data/X_new.npy
+      - artifacts/data/X_train.npy
+      - artifacts/metrics/evaluation_metrics.json
+    params:
+      - params.yaml:
+          - monitoring.drift_threshold
+          - monitoring.null_threshold
+          - monitoring.quality_min_score
+    outs:
+      - artifacts/metrics/monitoring_metrics.json
+      - reports/drift_report.json
+      - artifacts/metadata/retrain_flag.txt
+
+  train:
+    cmd: python src/model.py
+    deps:
+      - src/model.py
+      - artifacts/data/X_train.npy
+      - artifacts/data/y_train.npy
+    params:
+      - params.yaml:
+          - model.epochs
+          - model.batch_size
+          - model.learning_rate
+          - model.patience
+    outs:
+      - artifacts/models/model.keras
+      - artifacts/metrics/training_history.json
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - artifacts/models/model.keras
+      - artifacts/data/X_test.npy
+      - artifacts/data/y_test.npy
+    outs:
+      - artifacts/metrics/evaluation_metrics.json
+      - reports/performance_report.html
+
+  retrain:
+    cmd: python src/retrain.py
+    deps:
+      - src/retrain.py
+      - artifacts/metadata/retrain_flag.txt
+      - artifacts/data/train_with_new_data.csv
+      - artifacts/preprocessing/scaler.pkl
+      - artifacts/preprocessing/encoder.pkl
+      - artifacts/models/model.keras
+    params:
+      - params.yaml:
+          - model.epochs
+          - model.batch_size
+          - model.learning_rate
+          - model.patience
+          - retrain.mode
+    outs:
+      - artifacts/metadata/model_version.txt
+      - artifacts/metadata/last_retrain.txt

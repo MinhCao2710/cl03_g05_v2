@@ -1,0 +1,56 @@
+name: Retrain on New Data
+
+on:
+  # Trigger 1: automatically on push of new data
+  push:
+    paths:
+      - 'data/new_data.csv'
+
+  # Trigger 2: scheduled retraining every Sunday at midnight
+  schedule:
+    - cron: '0 0 * * 0'
+
+  # Trigger 3: manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install dvc[gs] pandas numpy tensorflow scikit-learn joblib scipy
+
+      - name: Configure DVC remote credentials
+        run: |
+          dvc remote modify origin --local auth basic
+          dvc remote modify origin --local user ${{ secrets.DAGSHUB_USERNAME }}
+          dvc remote modify origin --local password ${{ secrets.DAGSHUB_TOKEN }}
+
+      - name: Pull data and model artifacts from DagsHub
+        run: dvc pull
+
+      - name: Run DVC pipeline (preprocess → monitor → train → evaluate → retrain)
+        run: dvc repro
+
+      - name: Push updated artifacts to DagsHub
+        run: dvc push
+
+      - name: Commit updated dvc.lock back to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dvc.lock artifacts/metadata/
+          git diff --staged --quiet || git commit -m "ci: update dvc.lock and metadata after retraining [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,18 @@
+preprocessing:
+  test_size: 0.2
+  random_state: 42
+
+model:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  patience: 5
+
+retrain:
+  # Options: fine_tune | full
+  mode: fine_tune
+
+monitoring:
+  drift_threshold: 0.1
+  null_threshold: 0.05
+  quality_min_score: 0.8
