@@ -3,3 +3,6 @@
 /new_data_metadata.json
 /monitoring_summary.json
 /retraining_flags.json
+/retrain_metadata.json
+/model_version.txt
+/last_retrain.txt

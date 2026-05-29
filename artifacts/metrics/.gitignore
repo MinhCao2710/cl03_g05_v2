@@ -4,3 +4,5 @@
 /evaluation_metrics.json
 /classification_report.json
 /monitoring_metrics.json
+/retrain_metrics.json
+/retrain_history.json

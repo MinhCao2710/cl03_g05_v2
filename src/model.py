@@ -288,8 +288,8 @@ def main() -> None:
     train_metrics = calculate_classification_metrics(y_train, y_train_pred)
     test_metrics = calculate_classification_metrics(y_test, y_test_pred)
 
-    model_path = project_path(paths["model_path"])
-    legacy_model_path = project_path(paths["legacy_model_path"])
+    model_path = project_path(paths.get("base_model_path", paths["model_path"]))
+    legacy_model_path = project_path(paths.get("base_legacy_model_path", paths["legacy_model_path"]))
     scaler_path = project_path(paths["scaler_path"])
     feature_columns_path = project_path(paths["feature_columns_path"])
     feature_info_path = project_path(paths["feature_info_path"])
