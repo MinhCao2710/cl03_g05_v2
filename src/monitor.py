@@ -86,6 +86,7 @@ def check_data_quality(
     new_df: pd.DataFrame,
     feature_columns: list[str],
     target_column: str,
+    valid_label_values: set[int],
 ) -> dict[str, Any]:
     # it run all data quality checks on the incoming new_data DataFrame.
     # we checks 
@@ -97,6 +98,9 @@ def check_data_quality(
     #     6 unknown label values (if target present)
     issues: list[str] = []
     details: dict[str, Any] = {}
+
+    if new_df.empty:
+        issues.append("New data file contains no rows.")
 
     # 1. Missing feature columns
     missing_cols = [c for c in feature_columns if c not in new_df.columns]
@@ -115,7 +119,7 @@ def check_data_quality(
         issues.append(f"Unexpected extra columns found (will be ignored): {extra_cols}")
 
     # 3. Null / NaN values
-    null_counts = new_df[feature_columns].isnull().sum()
+    null_counts = new_df.reindex(columns=feature_columns).isnull().sum()
     null_report = {col: int(cnt) for col, cnt in null_counts.items() if cnt > 0}
     details["null_counts_per_column"] = null_report
     total_nulls = sum(null_report.values())
@@ -127,7 +131,7 @@ def check_data_quality(
 
     # Null rate per column (fraction)
     null_rates = {
-        col: round(int(cnt) / len(new_df), 4)
+        col: round(int(cnt) / len(new_df), 4) if len(new_df) else 0.0
         for col, cnt in null_counts.items()
         if col in feature_columns
     }
@@ -167,13 +171,16 @@ def check_data_quality(
     unknown_labels: list[Any] = []
     if target_column in new_df.columns:
         label_series = pd.to_numeric(new_df[target_column], errors="coerce").dropna()
-        unique_labels = set(int(v) for v in label_series.unique())
-        unknown_labels = sorted(unique_labels - VALID_LABEL_VALUES)
+        unique_labels = set(label_series.unique())
+        unknown_labels = sorted(
+            value for value in unique_labels
+            if not float(value).is_integer() or int(value) not in valid_label_values
+        )
         details["unknown_label_values"] = unknown_labels
         if unknown_labels:
             issues.append(
                 f"Unknown label value(s) in '{target_column}': {unknown_labels}. "
-                f"Valid labels are {sorted(VALID_LABEL_VALUES)}."
+                f"Valid labels are {sorted(valid_label_values)}."
             )
     else:
         details["unknown_label_values"] = []
@@ -428,9 +435,8 @@ def main() -> None:
     monitoring_params = params["monitoring"]
 
     # Load model and arrays
-    model = tf.keras.models.load_model(
-        project_path(paths["model_path"]), compile=False
-    )
+    monitor_model_path = paths.get("monitor_model_path", paths.get("base_model_path", paths["model_path"]))
+    model = tf.keras.models.load_model(project_path(monitor_model_path), compile=False)
     X_test = np.load(project_path(paths["x_test_path"]))
     y_test = np.load(project_path(paths["y_test_path"])).reshape(-1).astype(int)
     X_new = np.load(project_path(paths["x_new_path"]))
@@ -442,9 +448,16 @@ def main() -> None:
 
     target_column = params["data"]["target_column"]
     feature_columns = [c for c in train_df.columns if c != target_column]
+    feature_info_path = project_path(paths["feature_info_path"])
+    if feature_info_path.exists():
+        with feature_info_path.open("r", encoding="utf-8") as file:
+            feature_info = json.load(file)
+        valid_label_values = {int(label) for label in feature_info.get("class_labels", VALID_LABEL_VALUES)}
+    else:
+        valid_label_values = VALID_LABEL_VALUES
 
     # ── Run checks ──
-    quality_report = check_data_quality(new_df, feature_columns, target_column)
+    quality_report = check_data_quality(new_df, feature_columns, target_column, valid_label_values)
 
     drift_report = check_drift(
         train_df,
@@ -467,9 +480,11 @@ def main() -> None:
         r.startswith(("Accuracy", "Precision", "Recall", "F1"))
         for r in perf_reasons
     )
-    retraining_needed = bool(
+    retraining_recommended = bool(
         new_metrics is not None and performance_triggered
     ) or drift_report["drift_detected"]
+    retraining_blocked = not quality_report["passed"]
+    retraining_needed = retraining_recommended and not retraining_blocked
 
     all_reasons: list[str] = perf_reasons + drift_report["drift_flags"]
     if not quality_report["passed"]:
@@ -478,6 +493,8 @@ def main() -> None:
     labelled_mask = np.isfinite(y_new)
     flags = {
         "retraining_needed": retraining_needed,
+        "retraining_recommended": retraining_recommended,
+        "retraining_blocked": retraining_blocked,
         "triggered_by_performance": bool(new_metrics is not None and performance_triggered),
         "triggered_by_drift": drift_report["drift_detected"],
         "triggered_by_data_quality": not quality_report["passed"],

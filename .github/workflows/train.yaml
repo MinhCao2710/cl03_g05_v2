@@ -1,12 +1,22 @@
 name: Retrain on New Data
 
+permissions:
+  contents: write
+
 on:
-  # Trigger 1: automatically on push of new data
+  # Trigger 1: automatically when data or pipeline code changes on main
   push:
+    branches:
+      - main
     paths:
       - 'data/new_data.csv'
+      - 'src/**'
+      - 'dvc.yaml'
+      - 'params.yaml'
+      - 'requirements.txt'
+      - '.github/workflows/train.yaml'
 
-  # Trigger 2: scheduled retraining every Sunday at midnight
+  # Trigger 2: scheduled pipeline check every Sunday at midnight
   schedule:
     - cron: '0 0 * * 0'
 
@@ -28,7 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install dvc[gs] pandas numpy tensorflow scikit-learn joblib scipy
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Configure DVC remote credentials
         run: |
@@ -39,7 +50,7 @@ jobs:
       - name: Pull data and model artifacts from DagsHub
         run: dvc pull || true
 
-      - name: Run DVC pipeline (preprocess → monitor → train → evaluate → retrain)
+      - name: Run DVC pipeline
         run: dvc repro
 
       - name: Push updated artifacts to DagsHub
@@ -49,7 +60,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dvc.lock artifacts/metadata/
+          git add dvc.lock
           git diff --staged --quiet || git commit -m "ci: update dvc.lock and metadata after retraining [skip ci]"
           git push
         env:

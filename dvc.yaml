@@ -19,10 +19,12 @@ stages:
       - artifacts/preprocessing/feature_info.json
       - artifacts/data/X_test.npy
       - artifacts/data/y_test.npy
-      - artifacts/metrics/training_history.json
+      - artifacts/metadata/training_metadata.json
+    metrics:
       - artifacts/metrics/train_metrics.json
       - artifacts/metrics/test_metrics.json
-      - artifacts/metadata/training_metadata.json
+    plots:
+      - artifacts/metrics/training_history.json
 
   evaluate:
     cmd: python src/evaluate.py
@@ -36,13 +38,14 @@ stages:
     params:
       - paths
     outs:
-      - artifacts/metrics/evaluation_metrics.json
-      - artifacts/metrics/classification_report.json
       - artifacts/data/test_predictions.csv
       - artifacts/data/submission.csv
       - artifacts/metadata/evaluation_metadata.json
       - reports/confusion_matrix.png
       - reports/prediction_distribution.png
+    metrics:
+      - artifacts/metrics/evaluation_metrics.json
+      - artifacts/metrics/classification_report.json
 
   preprocess_new_data:
     cmd: python src/preprocess_new_data.py
@@ -66,9 +69,10 @@ stages:
     cmd: python src/monitor.py
     deps:
       - src/monitor.py
-      - models/model.keras
+      - models/base_model.keras
       - train/train.csv
       - data/new_data.csv
+      - artifacts/preprocessing/feature_info.json
       - artifacts/data/X_test.npy
       - artifacts/data/y_test.npy
       - artifacts/data/X_new.npy
@@ -78,9 +82,10 @@ stages:
       - paths
       - monitoring
     outs:
-      - artifacts/metrics/monitoring_metrics.json
       - artifacts/metadata/monitoring_summary.json
       - artifacts/metadata/retraining_flags.json
+    metrics:
+      - artifacts/metrics/monitoring_metrics.json
 
   retrain:
     cmd: python src/retrain.py
@@ -88,10 +93,12 @@ stages:
       - src/retrain.py
       - src/model.py
       - models/base_model.keras
+      - models/base_model.h5
       - test/test.csv
       - artifacts/data/train_with_new_data.csv
       - artifacts/preprocessing/scaler.joblib
       - artifacts/preprocessing/feature_info.json
+      - artifacts/metadata/retraining_flags.json
     params:
       - data
       - paths
@@ -102,8 +109,10 @@ stages:
     outs:
       - models/model.keras
       - models/model.h5
-      - artifacts/metrics/retrain_metrics.json
-      - artifacts/metrics/retrain_history.json
       - artifacts/metadata/retrain_metadata.json
       - artifacts/metadata/model_version.txt
       - artifacts/metadata/last_retrain.txt
+    metrics:
+      - artifacts/metrics/retrain_metrics.json
+    plots:
+      - artifacts/metrics/retrain_history.json

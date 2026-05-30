@@ -23,11 +23,13 @@ your-project/
 ├── test/
 │   └── test.csv                # Test data
 ├── artifacts/                  # Centralised DVC-tracked storage
-│   ├── models/model.keras
 │   ├── data/
 │   ├── preprocessing/
 │   ├── metrics/
 │   └── metadata/
+├── models/
+│   ├── base_model.keras        # Model trained from the original training set
+│   └── model.keras             # Deployed model after the retraining decision
 ├── reports/
 ├── dvc.yaml                    # DVC pipeline definition
 ├── dvc.lock                    # DVC pipeline lock file (auto-updated by CI)
@@ -47,8 +49,8 @@ cd YOUR_REPO
 
 ### 2. Install dependencies
 
-```bash
-pip install dvc pandas numpy tensorflow scikit-learn joblib scipy
+```
+pip install -r requirements.txt
 ```
 
 ### 3. Configure DVC remote (DagsHub)
@@ -122,8 +124,8 @@ The workflow (`.github/workflows/train.yaml`) runs on three triggers:
 
 | Trigger | When |
 |---|---|
-| `push` | Any push that changes `data/new_data.csv` |
-| `schedule` | Every Sunday at midnight (UTC) |
+| `push` | Pushes to `main` that change new data, pipeline code, or configuration |
+| `schedule` | Pipeline check every Sunday at midnight (UTC) |
 | `workflow_dispatch` | Manually from the GitHub Actions tab |
 
 ### Required GitHub Secrets
@@ -143,11 +145,11 @@ Go to **Settings → Secrets and variables → Actions → New repository secret
 
 Defined in `dvc.yaml`:
 
-1. **preprocess_new_data** — validates, cleans, and merges new data with training data; outputs numpy arrays to `artifacts/data/`
-2. **monitor** — runs data quality and drift checks; writes results to `artifacts/metrics/monitoring_metrics.json` and sets `artifacts/metadata/retrain_flag.txt`
-3. **train** — trains the Keras model on current training data; saves model and training history
-4. **evaluate** — computes accuracy, precision, recall, F1 on test set; saves `artifacts/metrics/evaluation_metrics.json`
-5. **retrain** — only executes if `retrain_flag.txt` is `true`; retrains model on merged dataset and updates all artifacts
+1. **train** — trains the base Keras classifier on the original training set and saves preprocessing artifacts
+2. **preprocess_new_data** — validates, cleans, and merges incoming data with the training set; outputs numpy arrays to `artifacts/data/`
+3. **monitor** — checks data quality, drift, and performance; writes metrics and `artifacts/metadata/retraining_flags.json`
+4. **retrain** — fine-tunes the base model only when monitoring requests retraining; otherwise promotes it unchanged
+5. **evaluate** — computes accuracy, precision, recall, and F1 for the deployed model
 
 ---
 
@@ -156,15 +158,13 @@ Defined in `dvc.yaml`:
 All tunable parameters live in `params.yaml`. Edit this file to change model hyperparameters, drift thresholds, or preprocessing options without touching source code.
 
 ```yaml
-model:
-  epochs: 50
+training:
+  epochs: 120
   batch_size: 32
-  learning_rate: 0.001
-  patience: 5
 
 monitoring:
-  drift_threshold: 0.1
-  null_threshold: 0.05
+  accuracy_drop_threshold: 0.05
+  missing_rate_threshold: 0.05
 ```
 
 ---

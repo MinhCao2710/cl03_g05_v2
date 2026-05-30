@@ -9,3 +9,4 @@ joblib
 PyYAML
 dvc
 h5py
+scipy

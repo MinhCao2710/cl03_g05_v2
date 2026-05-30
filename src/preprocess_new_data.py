@@ -77,6 +77,7 @@ def save_combined_training_data(
     train_df: pd.DataFrame,
     new_df: pd.DataFrame,
     target_column: str,
+    class_labels: list[Any],
     combined_path: Path,
 ) -> int:
     combined_path.parent.mkdir(parents=True, exist_ok=True)
@@ -85,7 +86,8 @@ def save_combined_training_data(
         return 0
 
     new_for_training = new_df.reindex(columns=train_df.columns).copy()
-    labelled_mask = pd.to_numeric(new_for_training[target_column], errors="coerce").notna()
+    valid_label_keys = {label_key(label) for label in class_labels}
+    labelled_mask = new_for_training[target_column].map(label_key).isin(valid_label_keys)
     labelled_new_rows = new_for_training.loc[labelled_mask]
     combined_df = pd.concat([train_df, labelled_new_rows], ignore_index=True)
     combined_df.to_csv(combined_path, index=False)
@@ -138,6 +140,7 @@ def main() -> None:
         train_df,
         new_df,
         target_column,
+        class_labels,
         project_path(paths["combined_train_data"]),
     )
 

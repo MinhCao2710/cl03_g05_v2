@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -19,8 +20,6 @@ from tensorflow import keras
 
 from model import (
     PROJECT_ROOT,
-    build_model,
-    build_preprocessor,
     calculate_classification_metrics,
     encode_labels,
     load_params,
@@ -30,7 +29,6 @@ from model import (
     save_json,
     set_random_seed,
     split_features_target,
-    transformed_feature_names,
 )
 
 
@@ -42,6 +40,23 @@ def load_json(path: Path) -> Any:
 def save_text(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(value, encoding="utf-8")
+
+
+def promote_base_model(paths: dict[str, Any]) -> None:
+    base_model_path = project_path(paths.get("base_model_path", paths["model_path"]))
+    base_legacy_model_path = project_path(
+        paths.get("base_legacy_model_path", paths["legacy_model_path"])
+    )
+    model_path = project_path(paths["model_path"])
+    legacy_model_path = project_path(paths["legacy_model_path"])
+
+    if not base_model_path.exists() or not base_legacy_model_path.exists():
+        raise FileNotFoundError("Base model artifacts are missing. Run src/model.py first.")
+
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    legacy_model_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(base_model_path, model_path)
+    shutil.copy2(base_legacy_model_path, legacy_model_path)
 
 
 def compile_loaded_model(model: keras.Model, params: dict[str, Any]) -> keras.Model:
@@ -84,11 +99,45 @@ def main() -> None:
     retrain_params = params.get("retrain", {})
     mode = retrain_params.get("mode", "fine_tune")
 
-    if mode not in {"fine_tune", "full"}:
-        raise ValueError("retrain.mode must be either 'fine_tune' or 'full'")
+    if mode != "fine_tune":
+        raise ValueError(
+            "retrain.mode must be 'fine_tune'. Full retraining needs a separate "
+            "DVC stage because it replaces upstream preprocessing artifacts."
+        )
 
     seed = int(training_params.get("random_state", 42))
     set_random_seed(seed)
+
+    flags_path = project_path(paths["retraining_flags_path"])
+    if not flags_path.exists():
+        raise FileNotFoundError(
+            f"Retraining flags not found: {flags_path}. Run src/monitor.py before retraining."
+        )
+
+    flags = load_json(flags_path)
+    if not flags.get("retraining_needed", False):
+        promote_base_model(paths)
+        checked_at = datetime.now(timezone.utc).isoformat()
+        model_version = f"base-{checked_at.replace(':', '').replace('+', 'Z')}"
+        blocked = bool(flags.get("retraining_blocked", False))
+        metadata = {
+            "created_at": checked_at,
+            "status": "blocked" if blocked else "skipped",
+            "reason": (
+                "Incoming data failed quality checks."
+                if blocked
+                else "Monitoring did not request retraining."
+            ),
+            "model_version": model_version,
+            "monitoring_flags": flags,
+        }
+        save_json(project_path(paths["retrain_metrics_path"]), metadata)
+        save_json(project_path(paths["retrain_history_path"]), {})
+        save_json(project_path(paths["retrain_metadata_path"]), metadata)
+        save_text(project_path(paths["last_retrain_path"]), f"skipped:{checked_at}")
+        save_text(project_path(paths["model_version_path"]), model_version)
+        print(f"Retraining {metadata['status']}: {metadata['reason']}")
+        return
 
     combined_train_path = project_path(paths["combined_train_data"])
     if not combined_train_path.exists():
@@ -123,22 +172,16 @@ def main() -> None:
     y_test = encode_labels(y_test_labels, class_to_index)
 
     scaler_path = project_path(paths["scaler_path"])
-    if mode == "fine_tune":
-        if not scaler_path.exists():
-            raise FileNotFoundError(
-                f"Preprocessor not found: {scaler_path}. Run src/model.py before fine-tuning."
-            )
-        preprocessor = joblib.load(scaler_path)
-        X_train = preprocessor.transform(X_train_raw).astype(np.float32)
-        X_test = preprocessor.transform(X_test_raw).astype(np.float32)
-        source_model_path = project_path(paths.get("base_model_path", paths["model_path"]))
-        model = tf.keras.models.load_model(source_model_path, compile=False)
-        model = compile_loaded_model(model, params)
-    else:
-        preprocessor = build_preprocessor(feature_columns, params)
-        X_train = preprocessor.fit_transform(X_train_raw).astype(np.float32)
-        X_test = preprocessor.transform(X_test_raw).astype(np.float32)
-        model = build_model(input_dim=X_train.shape[1], num_classes=len(class_labels), params=params)
+    if not scaler_path.exists():
+        raise FileNotFoundError(
+            f"Preprocessor not found: {scaler_path}. Run src/model.py before fine-tuning."
+        )
+    preprocessor = joblib.load(scaler_path)
+    X_train = preprocessor.transform(X_train_raw).astype(np.float32)
+    X_test = preprocessor.transform(X_test_raw).astype(np.float32)
+    source_model_path = project_path(paths.get("base_model_path", paths["model_path"]))
+    model = tf.keras.models.load_model(source_model_path, compile=False)
+    model = compile_loaded_model(model, params)
 
     epochs = int(retrain_params.get("epochs", training_params.get("epochs", 100)))
     history = model.fit(
@@ -165,21 +208,6 @@ def main() -> None:
     model.save(model_path)
     model.save(legacy_model_path)
 
-    if mode == "full":
-        scaler_path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(preprocessor, scaler_path)
-
-    feature_info = {
-        "target_column": target_column,
-        "feature_columns": feature_columns,
-        "transformed_feature_columns": transformed_feature_names(preprocessor),
-        "class_labels": class_labels,
-        "class_to_index": {str(label): int(index) for label, index in class_to_index.items()},
-        "standard_scale_columns": params["preprocessing"].get("standard_scale_columns", []),
-        "minmax_scale_columns": params["preprocessing"].get("minmax_scale_columns", []),
-    }
-    save_json(feature_info_path, feature_info)
-
     history_payload = {
         metric: [float(value) for value in values] for metric, values in history.history.items()
     }
@@ -195,12 +223,6 @@ def main() -> None:
             "test_metrics": test_metrics,
         },
     )
-
-    x_test_path = project_path(paths["x_test_path"])
-    y_test_path = project_path(paths["y_test_path"])
-    x_test_path.parent.mkdir(parents=True, exist_ok=True)
-    np.save(x_test_path, X_test)
-    np.save(y_test_path, y_test)
 
     retrained_at = datetime.now(timezone.utc).isoformat()
     model_version = retrained_at.replace(":", "").replace("+", "Z")
