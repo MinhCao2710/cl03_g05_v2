@@ -1,0 +1,50 @@
+# Local DVC state
+/.dvc/config.local
+/.dvc/tmp
+/.dvc/cache
+
+# Generated data artifacts
+/artifacts/data/X_test.npy
+/artifacts/data/y_test.npy
+/artifacts/data/test_predictions.csv
+/artifacts/data/submission.csv
+/artifacts/data/X_new.npy
+/artifacts/data/X_new_2d.npy
+/artifacts/data/y_new.npy
+/artifacts/data/new_data_aligned.csv
+/artifacts/data/train_with_new_data.csv
+
+# Generated metadata artifacts
+/artifacts/metadata/training_metadata.json
+/artifacts/metadata/evaluation_metadata.json
+/artifacts/metadata/new_data_metadata.json
+/artifacts/metadata/monitoring_summary.json
+/artifacts/metadata/retraining_flags.json
+/artifacts/metadata/retrain_metadata.json
+/artifacts/metadata/model_version.txt
+/artifacts/metadata/last_retrain.txt
+
+# Generated metrics artifacts
+/artifacts/metrics/train_metrics.json
+/artifacts/metrics/test_metrics.json
+/artifacts/metrics/training_history.json
+/artifacts/metrics/evaluation_metrics.json
+/artifacts/metrics/classification_report.json
+/artifacts/metrics/monitoring_metrics.json
+/artifacts/metrics/retrain_metrics.json
+/artifacts/metrics/retrain_history.json
+
+# Generated preprocessing artifacts
+/artifacts/preprocessing/scaler.joblib
+/artifacts/preprocessing/feature_columns.json
+/artifacts/preprocessing/feature_info.json
+
+# Generated models
+/models/model.keras
+/models/model.h5
+/models/base_model.keras
+/models/base_model.h5
+
+# Generated reports
+/reports/confusion_matrix.png
+/reports/prediction_distribution.png

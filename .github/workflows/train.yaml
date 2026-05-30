@@ -65,3 +65,19 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send pipeline email notification
+        if: ${{ always() }}
+        uses: dawidd6/action-send-mail@v6
+        with:
+          connection_url: ${{ secrets.MAIL_CONNECTION }}
+          subject: "[${{ job.status }}] MLOps pipeline - ${{ github.repository }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_FROM }}
+          body: |
+            Pipeline status: ${{ job.status }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Trigger: ${{ github.event_name }}
+            Run details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
