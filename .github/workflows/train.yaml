@@ -56,12 +56,12 @@ jobs:
       - name: Push updated artifacts to DagsHub
         run: dvc push
 
-      - name: Commit updated dvc.lock back to repository
+      - name: Commit updated lock file and metrics back to repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dvc.lock
-          git diff --staged --quiet || git commit -m "ci: update dvc.lock and metadata after retraining [skip ci]"
+          git add dvc.lock artifacts/metrics/
+          git diff --staged --quiet || git commit -m "ci: update dvc.lock and metrics after pipeline run [skip ci]"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

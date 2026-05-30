@@ -21,10 +21,13 @@ stages:
       - artifacts/data/y_test.npy
       - artifacts/metadata/training_metadata.json
     metrics:
-      - artifacts/metrics/train_metrics.json
-      - artifacts/metrics/test_metrics.json
+      - artifacts/metrics/train_metrics.json:
+          cache: false
+      - artifacts/metrics/test_metrics.json:
+          cache: false
     plots:
-      - artifacts/metrics/training_history.json
+      - artifacts/metrics/training_history.json:
+          cache: false
 
   evaluate:
     cmd: python src/evaluate.py
@@ -44,8 +47,10 @@ stages:
       - reports/confusion_matrix.png
       - reports/prediction_distribution.png
     metrics:
-      - artifacts/metrics/evaluation_metrics.json
-      - artifacts/metrics/classification_report.json
+      - artifacts/metrics/evaluation_metrics.json:
+          cache: false
+      - artifacts/metrics/classification_report.json:
+          cache: false
 
   preprocess_new_data:
     cmd: python src/preprocess_new_data.py
@@ -85,7 +90,8 @@ stages:
       - artifacts/metadata/monitoring_summary.json
       - artifacts/metadata/retraining_flags.json
     metrics:
-      - artifacts/metrics/monitoring_metrics.json
+      - artifacts/metrics/monitoring_metrics.json:
+          cache: false
 
   retrain:
     cmd: python src/retrain.py
@@ -113,6 +119,8 @@ stages:
       - artifacts/metadata/model_version.txt
       - artifacts/metadata/last_retrain.txt
     metrics:
-      - artifacts/metrics/retrain_metrics.json
+      - artifacts/metrics/retrain_metrics.json:
+          cache: false
     plots:
-      - artifacts/metrics/retrain_history.json
+      - artifacts/metrics/retrain_history.json:
+          cache: false
