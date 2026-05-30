@@ -1,0 +1,212 @@
+{
+  "created_at": "2026-05-30T07:21:30.135942+00:00",
+  "data_quality": {
+    "passed": true,
+    "issue_count": 0,
+    "issues": [],
+    "details": {
+      "missing_feature_columns": [],
+      "extra_columns": [],
+      "null_counts_per_column": {},
+      "null_rates_per_column": {
+        "BMI": 0.0,
+        "Eating_risk": 0.0,
+        "Activity_risk": 0.0,
+        "Lifestyle_risk": 0.0,
+        "family_history_with_overweight": 0.0
+      },
+      "duplicate_rows": 0,
+      "out_of_range_values": {},
+      "unknown_label_values": []
+    }
+  },
+  "drift": {
+    "drift_detected": false,
+    "drift_flag_count": 0,
+    "drift_flags": [],
+    "details": {
+      "feature_drift": {
+        "BMI": {
+          "train_mean": 29.768105,
+          "new_mean": 29.824205,
+          "mean_relative_change": 0.001885,
+          "mean_drifted": false,
+          "train_std": 7.991385,
+          "new_std": 8.350226,
+          "std_relative_change": 0.044903,
+          "std_drifted": false,
+          "ks_statistic": 0.046449,
+          "ks_pvalue": 0.804395,
+          "ks_significant_drift": false
+        },
+        "Eating_risk": {
+          "train_mean": -0.392901,
+          "new_mean": -0.367683,
+          "mean_relative_change": 0.064185,
+          "mean_drifted": false,
+          "train_std": 0.743773,
+          "new_std": 0.727747,
+          "std_relative_change": 0.021547,
+          "std_drifted": false,
+          "ks_statistic": 0.052196,
+          "ks_pvalue": 0.679678,
+          "ks_significant_drift": false
+        },
+        "Activity_risk": {
+          "train_mean": -0.365133,
+          "new_mean": -0.313693,
+          "mean_relative_change": 0.140882,
+          "mean_drifted": false,
+          "train_std": 1.031565,
+          "new_std": 0.957911,
+          "std_relative_change": 0.0714,
+          "std_drifted": false,
+          "ks_statistic": 0.051578,
+          "ks_pvalue": 0.693331,
+          "ks_significant_drift": false
+        },
+        "Lifestyle_risk": {
+          "train_mean": 2.41116,
+          "new_mean": 2.350568,
+          "mean_relative_change": 0.02513,
+          "mean_drifted": false,
+          "train_std": 0.98877,
+          "new_std": 1.008966,
+          "std_relative_change": 0.020425,
+          "std_drifted": false,
+          "ks_statistic": 0.049055,
+          "ks_pvalue": 0.748758,
+          "ks_significant_drift": false
+        },
+        "family_history_with_overweight": {
+          "train_mean": 0.821477,
+          "new_mean": 0.837321,
+          "mean_relative_change": 0.019286,
+          "mean_drifted": false,
+          "train_std": 0.383083,
+          "new_std": 0.369959,
+          "std_relative_change": 0.034259,
+          "std_drifted": false,
+          "ks_statistic": 0.015843,
+          "ks_pvalue": 1.0,
+          "ks_significant_drift": false
+        }
+      },
+      "class_distribution_drift": {
+        "per_class": {
+          "0": {
+            "train_fraction": 0.127907,
+            "new_fraction": 0.129187,
+            "absolute_change": 0.00128,
+            "drifted": false
+          },
+          "1": {
+            "train_fraction": 0.135431,
+            "new_fraction": 0.133971,
+            "absolute_change": 0.00146,
+            "drifted": false
+          },
+          "2": {
+            "train_fraction": 0.168263,
+            "new_fraction": 0.167464,
+            "absolute_change": 0.000799,
+            "drifted": false
+          },
+          "3": {
+            "train_fraction": 0.142271,
+            "new_fraction": 0.143541,
+            "absolute_change": 0.00127,
+            "drifted": false
+          },
+          "4": {
+            "train_fraction": 0.155267,
+            "new_fraction": 0.15311,
+            "absolute_change": 0.002157,
+            "drifted": false
+          },
+          "5": {
+            "train_fraction": 0.132011,
+            "new_fraction": 0.133971,
+            "absolute_change": 0.00196,
+            "drifted": false
+          },
+          "6": {
+            "train_fraction": 0.138851,
+            "new_fraction": 0.138756,
+            "absolute_change": 9.5e-05,
+            "drifted": false
+          }
+        }
+      },
+      "missing_rate_drift": {
+        "BMI": {
+          "train_missing_rate": 0.0,
+          "new_missing_rate": 0.0,
+          "absolute_change": 0.0,
+          "drifted": false
+        },
+        "Eating_risk": {
+          "train_missing_rate": 0.0,
+          "new_missing_rate": 0.0,
+          "absolute_change": 0.0,
+          "drifted": false
+        },
+        "Activity_risk": {
+          "train_missing_rate": 0.0,
+          "new_missing_rate": 0.0,
+          "absolute_change": 0.0,
+          "drifted": false
+        },
+        "Lifestyle_risk": {
+          "train_missing_rate": 0.0,
+          "new_missing_rate": 0.0,
+          "absolute_change": 0.0,
+          "drifted": false
+        },
+        "family_history_with_overweight": {
+          "train_missing_rate": 0.0,
+          "new_missing_rate": 0.0,
+          "absolute_change": 0.0,
+          "drifted": false
+        }
+      }
+    }
+  },
+  "old_test_metrics": {
+    "accuracy": 0.9350961538461539,
+    "precision": 0.9363956544281702,
+    "recall": 0.9350961538461539,
+    "f1": 0.9347372016872446,
+    "precision_macro": 0.9339539503273082,
+    "recall_macro": 0.9336234755475801,
+    "f1_macro": 0.9326928871719743
+  },
+  "new_data_metrics": {
+    "accuracy": 0.9330143540669856,
+    "precision": 0.9390255534567927,
+    "recall": 0.9330143540669856,
+    "f1": 0.933367888350359,
+    "precision_macro": 0.9362909321434668,
+    "recall_macro": 0.9332600281491908,
+    "f1_macro": 0.932071327338914
+  },
+  "performance_change": {
+    "accuracy_absolute_change": -0.002082,
+    "precision_absolute_change": 0.00263,
+    "recall_absolute_change": -0.002082,
+    "f1_absolute_change": -0.001369
+  },
+  "performance_reasons": [],
+  "flags": {
+    "retraining_needed": false,
+    "retraining_recommended": false,
+    "retraining_blocked": false,
+    "triggered_by_performance": false,
+    "triggered_by_drift": false,
+    "triggered_by_data_quality": false,
+    "labelled_new_rows": 209,
+    "min_labelled_new_rows": 20,
+    "total_reason_count": 0
+  },
+  "all_reasons": []
+}

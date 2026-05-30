@@ -24,16 +24,6 @@
 /artifacts/metadata/model_version.txt
 /artifacts/metadata/last_retrain.txt
 
-# Generated metrics artifacts
-/artifacts/metrics/train_metrics.json
-/artifacts/metrics/test_metrics.json
-/artifacts/metrics/training_history.json
-/artifacts/metrics/evaluation_metrics.json
-/artifacts/metrics/classification_report.json
-/artifacts/metrics/monitoring_metrics.json
-/artifacts/metrics/retrain_metrics.json
-/artifacts/metrics/retrain_history.json
-
 # Generated preprocessing artifacts
 /artifacts/preprocessing/scaler.joblib
 /artifacts/preprocessing/feature_columns.json

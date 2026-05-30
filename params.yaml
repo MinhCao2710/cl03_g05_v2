@@ -71,9 +71,9 @@ model:
 
 training:
   random_state: 42
-  epochs: 120
-  batch_size: 32
-  validation_split: 0.2
+  epochs: 100
+  batch_size: 64
+  validation_split: 0.435
   verbose: 1
   early_stopping:
     enabled: true
