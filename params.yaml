@@ -64,7 +64,7 @@ model:
     - 32
     - 16
   activation: relu
-  dropout: 0.21
+  dropout: 0.22
   l2_reg: 0.0001
   learning_rate: 0.001
   loss: sparse_categorical_crossentropy
