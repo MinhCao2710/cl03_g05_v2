@@ -136,14 +136,15 @@ Go to **Settings → Secrets and variables → Actions → New repository secret
 |---|---|
 | `DAGSHUB_USERNAME` | Your DagsHub username |
 | `DAGSHUB_TOKEN` | Your DagsHub access token (from Account Settings → Tokens) |
-| `MAIL_CONNECTION` | SMTP connection URL, such as `smtp+starttls://USERNAME:APP_PASSWORD@smtp.gmail.com:587` |
+| `MAIL_USERNAME` | Gmail address used to send pipeline notifications |
+| `MAIL_PASSWORD` | Google App Password for the sender account |
 | `MAIL_TO` | Recipient email address, or a comma-separated list of addresses |
 | `MAIL_FROM` | Sender name and address, such as `MLOps Pipeline <your-email@gmail.com>` |
 
 > **Never commit your token or password.** Always use the `--local` flag for DVC credentials locally, and GitHub secrets in CI.
 
 The workflow sends an email after each pipeline run, including failed runs. For Gmail, enable
-2-Step Verification and use a Google App Password in `MAIL_CONNECTION`, not your normal password.
+2-Step Verification and store a Google App Password in `MAIL_PASSWORD`, not your normal password.
 
 ---
 
