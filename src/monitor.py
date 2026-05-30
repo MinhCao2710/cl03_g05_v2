@@ -341,7 +341,6 @@ def check_drift(
     }
 
 
-# ── Performance Monitoring ────────────────────────────────────────────────────
 
 def check_performance(
     model: tf.keras.Model,
@@ -448,7 +447,15 @@ def main() -> None:
     quality_report = check_data_quality(new_df, feature_columns, target_column)
 
     drift_report = check_drift(
-        train_df, new_df, feature_columns, target_column
+        train_df,
+        new_df,
+        feature_columns,
+        target_column,
+        mean_shift_threshold=float(monitoring_params.get("mean_shift_threshold", 0.20)),
+        std_shift_threshold=float(monitoring_params.get("std_shift_threshold", 0.30)),
+        ks_pvalue_threshold=float(monitoring_params.get("ks_pvalue_threshold", 0.05)),
+        class_dist_threshold=float(monitoring_params.get("class_dist_threshold", 0.10)),
+        missing_rate_threshold=float(monitoring_params.get("missing_rate_threshold", 0.05)),
     )
 
     old_metrics, new_metrics, performance_change, perf_reasons = check_performance(
