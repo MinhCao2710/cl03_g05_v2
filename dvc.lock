@@ -26,7 +26,7 @@ stages:
           - 32
           - 16
           activation: relu
-          dropout: 0.325
+          dropout: 0.2
           l2_reg: 0.0001
           learning_rate: 0.001
           loss: sparse_categorical_crossentropy
@@ -81,7 +81,7 @@ stages:
           - Lifestyle_risk
         training:
           random_state: 42
-          epochs: 102
+          epochs: 103
           batch_size: 64
           validation_split: 0.435
           verbose: 1
@@ -101,20 +101,20 @@ stages:
       size: 3456
     - path: artifacts/metadata/training_metadata.json
       hash: md5
-      md5: 7d060ac06db108e36084cf7b72d2354c
+      md5: 4c2a4001faf9923ac0620ec420ee2079
       size: 398
     - path: artifacts/metrics/test_metrics.json
       hash: md5
-      md5: 5f85aa02749cb41e5e46a9755e3e5835
+      md5: 24a0d88a624d246aafb9b420795031ab
       size: 275
     - path: artifacts/metrics/train_metrics.json
       hash: md5
-      md5: 1d1e62e8e5137c81b8dd8c3b2f0c4087
+      md5: c39357a319749952b6a8e35bacaeb8c1
       size: 275
     - path: artifacts/metrics/training_history.json
       hash: md5
-      md5: 89f0c1684849db51d62c6161bcc6d578
-      size: 9861
+      md5: 7c4e49c8e5cfb7592feabc05890fc1e5
+      size: 9974
     - path: artifacts/preprocessing/feature_columns.json
       hash: md5
       md5: 0ce27d72bebd467ee73803aa947af729
@@ -129,12 +129,12 @@ stages:
       size: 3794
     - path: models/base_model.h5
       hash: md5
-      md5: 09456430ca917a89ed5a7d62b83478a9
+      md5: 2eb0061ba0f3f671104e747e06faf05d
       size: 79736
     - path: models/base_model.keras
       hash: md5
-      md5: 0c5538b3c3b4faa3771d3b9e982ad013
-      size: 74594
+      md5: c5df237f6dc14f2634b561c572befbc0
+      size: 74588
   preprocess_new_data:
     cmd: python src/preprocess_new_data.py
     deps:
@@ -255,8 +255,8 @@ stages:
       size: 10674
     - path: models/base_model.keras
       hash: md5
-      md5: 0c5538b3c3b4faa3771d3b9e982ad013
-      size: 74594
+      md5: c5df237f6dc14f2634b561c572befbc0
+      size: 74588
     - path: src/monitor.py
       hash: md5
       md5: ce9ea250e180686a2029bdf8929d4391
@@ -324,16 +324,16 @@ stages:
     outs:
     - path: artifacts/metadata/monitoring_summary.json
       hash: md5
-      md5: 22898f612d03f60bc540a6251dd5968d
-      size: 6198
+      md5: 67e6790fa0bfe36c2a961aa69f35db5c
+      size: 6197
     - path: artifacts/metadata/retraining_flags.json
       hash: md5
       md5: 5df7e18e342a1cd146d6ab8a6425304b
       size: 290
     - path: artifacts/metrics/monitoring_metrics.json
       hash: md5
-      md5: 22898f612d03f60bc540a6251dd5968d
-      size: 6198
+      md5: 67e6790fa0bfe36c2a961aa69f35db5c
+      size: 6197
   retrain:
     cmd: python src/retrain.py
     deps:
@@ -355,12 +355,12 @@ stages:
       size: 3794
     - path: models/base_model.h5
       hash: md5
-      md5: 09456430ca917a89ed5a7d62b83478a9
+      md5: 2eb0061ba0f3f671104e747e06faf05d
       size: 79736
     - path: models/base_model.keras
       hash: md5
-      md5: 0c5538b3c3b4faa3771d3b9e982ad013
-      size: 74594
+      md5: c5df237f6dc14f2634b561c572befbc0
+      size: 74588
     - path: src/model.py
       hash: md5
       md5: 0e72a05caec204e6609e6a9aae7becf9
@@ -384,7 +384,7 @@ stages:
           - 32
           - 16
           activation: relu
-          dropout: 0.325
+          dropout: 0.2
           l2_reg: 0.0001
           learning_rate: 0.001
           loss: sparse_categorical_crossentropy
@@ -442,7 +442,7 @@ stages:
           epochs: 30
         training:
           random_state: 42
-          epochs: 102
+          epochs: 103
           batch_size: 64
           validation_split: 0.435
           verbose: 1
@@ -454,15 +454,15 @@ stages:
     outs:
     - path: artifacts/metadata/last_retrain.txt
       hash: md5
-      md5: da22f88ef50ea98f8d3cac1fd851c33a
+      md5: 153cddfd1eeaba0cc69b2b198b2a4e07
       size: 40
     - path: artifacts/metadata/model_version.txt
       hash: md5
-      md5: 93e7cb6d6a3dba98429636ebb46232e9
+      md5: dffd85472c9eef2e295c3c2f28940f91
       size: 34
     - path: artifacts/metadata/retrain_metadata.json
       hash: md5
-      md5: 6e3921bdfb471feaf901343a4baf5403
+      md5: 5fea48701d2fe03e0ad99307ecffdd74
       size: 522
     - path: artifacts/metrics/retrain_history.json
       hash: md5
@@ -470,16 +470,16 @@ stages:
       size: 2
     - path: artifacts/metrics/retrain_metrics.json
       hash: md5
-      md5: 6e3921bdfb471feaf901343a4baf5403
+      md5: 5fea48701d2fe03e0ad99307ecffdd74
       size: 522
     - path: models/model.h5
       hash: md5
-      md5: 09456430ca917a89ed5a7d62b83478a9
+      md5: 2eb0061ba0f3f671104e747e06faf05d
       size: 79736
     - path: models/model.keras
       hash: md5
-      md5: 0c5538b3c3b4faa3771d3b9e982ad013
-      size: 74594
+      md5: c5df237f6dc14f2634b561c572befbc0
+      size: 74588
   evaluate:
     cmd: python src/evaluate.py
     deps:
@@ -493,7 +493,7 @@ stages:
       size: 3456
     - path: artifacts/metadata/last_retrain.txt
       hash: md5
-      md5: da22f88ef50ea98f8d3cac1fd851c33a
+      md5: 153cddfd1eeaba0cc69b2b198b2a4e07
       size: 40
     - path: artifacts/preprocessing/feature_info.json
       hash: md5
@@ -501,8 +501,8 @@ stages:
       size: 704
     - path: models/model.keras
       hash: md5
-      md5: 0c5538b3c3b4faa3771d3b9e982ad013
-      size: 74594
+      md5: c5df237f6dc14f2634b561c572befbc0
+      size: 74588
     - path: src/evaluate.py
       hash: md5
       md5: c3660bf7d2852c4a64c4a0fc7ab7df17
@@ -553,29 +553,29 @@ stages:
     outs:
     - path: artifacts/data/submission.csv
       hash: md5
-      md5: 93407e670e565e6cea809fdaa0c58b66
+      md5: a7711f28170c30d6dbc74d6de07007f7
       size: 2404
     - path: artifacts/data/test_predictions.csv
       hash: md5
-      md5: 40a11f9a0f7fb733df153909263a8e08
-      size: 46547
+      md5: d91fb2be055abd25814a479bc1827e6d
+      size: 46697
     - path: artifacts/metadata/evaluation_metadata.json
       hash: md5
-      md5: b6d9c4d280a913b02df8479db78ab646
+      md5: 1a0ec7e3cf73f54c002bab0013aced35
       size: 327
     - path: artifacts/metrics/classification_report.json
       hash: md5
-      md5: 1f561d8890d304aa06b44d8159067e7a
-      size: 1258
+      md5: 1a307e970c4ff285b942d6f707dd2060
+      size: 1285
     - path: artifacts/metrics/evaluation_metrics.json
       hash: md5
-      md5: 5f85aa02749cb41e5e46a9755e3e5835
+      md5: 24a0d88a624d246aafb9b420795031ab
       size: 275
     - path: reports/confusion_matrix.png
       hash: md5
-      md5: 35a2807855987f01d2f3a697dbacf343
-      size: 108873
+      md5: 0761a7ce8ec84feb87053c48021b7a37
+      size: 108629
     - path: reports/prediction_distribution.png
       hash: md5
-      md5: 5097b661edb7efcc413f615af8e17cb2
-      size: 77431
+      md5: ed31f578c7264bb149553f001305758d
+      size: 77423
