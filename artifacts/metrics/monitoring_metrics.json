@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-05-31T03:42:53.020163+00:00",
+  "created_at": "2026-05-31T03:48:29.675227+00:00",
   "data_quality": {
     "passed": true,
     "issue_count": 0,
@@ -173,13 +173,13 @@
     }
   },
   "old_test_metrics": {
-    "accuracy": 0.9326923076923077,
-    "precision": 0.9345358181747311,
-    "recall": 0.9326923076923077,
-    "f1": 0.9322979209345907,
-    "precision_macro": 0.9319307753654744,
-    "recall_macro": 0.9317633898204993,
-    "f1_macro": 0.9304251661074303
+    "accuracy": 0.9302884615384616,
+    "precision": 0.9331300586595379,
+    "recall": 0.9302884615384616,
+    "f1": 0.9297637175056029,
+    "precision_macro": 0.9309637095309004,
+    "recall_macro": 0.9295645595950346,
+    "f1_macro": 0.9281591327137472
   },
   "new_data_metrics": {
     "accuracy": 0.9521531100478469,
@@ -191,10 +191,10 @@
     "f1_macro": 0.9497333037775734
   },
   "performance_change": {
-    "accuracy_absolute_change": 0.019461,
-    "precision_absolute_change": 0.024073,
-    "recall_absolute_change": 0.019461,
-    "f1_absolute_change": 0.019576
+    "accuracy_absolute_change": 0.021865,
+    "precision_absolute_change": 0.025479,
+    "recall_absolute_change": 0.021865,
+    "f1_absolute_change": 0.02211
   },
   "performance_reasons": [],
   "flags": {
