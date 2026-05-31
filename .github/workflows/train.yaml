@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -74,7 +76,13 @@ jobs:
         run: |
           git remote add dagshub https://dagshub.com/MinhCao2710/cl03_g05_test.git
           AUTH_HEADER="$(printf '%s:%s' "$DAGSHUB_USERNAME" "$DAGSHUB_TOKEN" | base64 -w0)"
-          git -c http.extraheader="Authorization: Basic $AUTH_HEADER" push dagshub HEAD:main
+          DAGSHUB_MAIN="$(git -c http.extraheader="Authorization: Basic $AUTH_HEADER" ls-remote --heads dagshub main | cut -f1)"
+          if [ -n "$DAGSHUB_MAIN" ]; then
+            git -c http.extraheader="Authorization: Basic $AUTH_HEADER" push \
+              --force-with-lease=refs/heads/main:"$DAGSHUB_MAIN" dagshub HEAD:main
+          else
+            git -c http.extraheader="Authorization: Basic $AUTH_HEADER" push dagshub HEAD:main
+          fi
 
       - name: Send pipeline email notification
         if: ${{ always() }}
