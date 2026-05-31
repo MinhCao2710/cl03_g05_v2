@@ -64,14 +64,14 @@ model:
     - 32
     - 16
   activation: relu
-  dropout: 0.3556
+  dropout: 0.325
   l2_reg: 0.0001
   learning_rate: 0.001
   loss: sparse_categorical_crossentropy
 
 training:
   random_state: 42
-  epochs: 100
+  epochs: 101
   batch_size: 64
   validation_split: 0.435
   verbose: 1
