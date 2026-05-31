@@ -12,6 +12,7 @@ on:
       - 'data/new_data.csv'
       - 'src/**'
       - 'dvc.yaml'
+      - '.dvc/config'
       - 'params.yaml'
       - 'requirements.txt'
       - '.github/workflows/train.yaml'
