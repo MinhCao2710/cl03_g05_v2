@@ -115,6 +115,8 @@ git push
 ```
 
 GitHub Actions will automatically detect the push and run the full pipeline.
+After the pipeline finishes, the workflow pushes DVC artifacts and mirrors the current Git
+commit to the DagsHub repository so its Files tab can resolve `dvc.lock` entries.
 
 ---
 
